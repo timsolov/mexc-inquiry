@@ -61,7 +61,13 @@ with open(best_bid_ask_file_path, 'a') as fob, open(trades_file_path, "a") as ft
                 trade = trades[i]
                 
                 last_trade_id = trade['id']
-                trades_csv.writerow([time.time(), trade['timestamp'], trade['symbol'], trade['side'], trade['takerOrMaker'], trade['price'], trade['amount'], trade['cost']])
+                # ---- correct buy sell status ---
+                if trade['info']['m'] == False: side = 'buy'
+                else: side ='sell'
+                
+                # ---- write new format ------
+                trades_csv.writerow([time.time(), trade['timestamp'], trade['symbol'], side, trade['price'], trade['amount'], trade['cost']])
+
             ft.flush()
             
             print("there are", len(trades)-idx, "new trades")
