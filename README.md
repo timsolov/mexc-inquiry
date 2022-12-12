@@ -1,13 +1,13 @@
 # Project for inquiry the MEXC's order book and trades
 
 ### Tested with markets:
-Binance,
-Huobi,
-Kucoin,
-Mexc,
-Kuna,
-Exmo,
-Okx
+- Binance
+- Huobi
+- Kucoin
+- Mexc
+- Kuna
+- Exmo
+- Okx
 
 
 ### Requirements
