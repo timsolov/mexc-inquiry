@@ -2,7 +2,7 @@
 
 ### Requirements
 
-- python >= 3.11.0
+- python >= 3.7.0
 - pip >= 22.3.1
 
 ### Installation
