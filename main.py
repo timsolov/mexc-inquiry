@@ -4,12 +4,12 @@ import time
 import csv
 import os
 
-mexc = ccxt.mexc3()
-mexc.load_markets()
+market = ccxt.mexc3()
+market.load_markets()
 
 rate_limit = 20 # requests per second
 delay_api = 1 / rate_limit * 2
-symbols = mexc.symbols
+symbols = market.symbols
 best_bid_ask_file_path = "best_bid_ask.csv"
 trades_file_path = "trades.csv"
 
@@ -40,7 +40,7 @@ with open(best_bid_ask_file_path, 'a') as fob, open(trades_file_path, "a") as ft
     trades_csv = csv.writer(ft)
     while True:
         for symbol in symbols:
-            order_book = mexc.fetch_order_book(symbol)
+            order_book = market.fetch_order_book(symbol)
             best_bid = order_book['bids'][0][0]
             best_ask = order_book['asks'][0][0]
             
@@ -50,27 +50,31 @@ with open(best_bid_ask_file_path, 'a') as fob, open(trades_file_path, "a") as ft
             
             print("best bid and ask for", symbol, "are", best_bid, best_ask)
             
-            trades = mexc.fetch_trades(symbol)
+            trades = market.fetch_trades(symbol)
             # to prevent duplicated records we should find last saved trade id
             idx = 0
             for i, trade in enumerate(trades):
                 if trade['id'] == last_trade_id:
                     idx = i
                     break
-            for i in range(idx, len(trades)):
+            for i in range(idx+1, len(trades)): #---- idx+1 to avoid last trade repeating ----
                 trade = trades[i]
-                
+                # print(trade)
                 last_trade_id = trade['id']
-                # ---- correct buy sell status ---
-                if trade['info']['m'] == False: side = 'buy'
-                else: side ='sell'
-                
-                # ---- write new format ------
-                trades_csv.writerow([time.time(), trade['timestamp'], trade['symbol'], side, trade['price'], trade['amount'], trade['cost']])
+                try:
+                    #---- special for MEXC API -----
+                    if trade['info']['m'] == False:
+                        side = 'buy'
+                    else:
+                        side = 'sell'
+                except KeyError:
+                    #---- standart  API ------
+                    side = trade['side']
 
+                trades_csv.writerow([time.time(), trade['timestamp'], trade['symbol'], side, trade['price'], trade['amount'], trade['cost']])
             ft.flush()
             
-            print("there are", len(trades)-idx, "new trades")
+            #print("there are", len(trades)-idx, "new trades")
             
             time.sleep(delay_api)
         time.sleep(config['delay'])
